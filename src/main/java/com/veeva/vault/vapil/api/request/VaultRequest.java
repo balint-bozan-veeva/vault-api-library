@@ -322,6 +322,12 @@ public abstract class VaultRequest {
 		if (vaultClient.hasSessionId())
 			request.addHeaderParam(HTTP_HEADER_AUTHORIZATION, vaultClient.getSessionId());
 
+		// add additional parameter provided by the user
+		if(vaultClient.getUserProvidedHeaderParams() != null){
+			vaultClient.getUserProvidedHeaderParams()
+					.forEach((key, value) -> request.addHeaderParam(key, value));
+		}
+
 		// Add the client id 
 		String vaultClientId = vaultClient.getVaultClientId();
 

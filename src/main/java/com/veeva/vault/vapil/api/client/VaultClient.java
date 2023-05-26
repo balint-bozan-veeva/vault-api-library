@@ -14,6 +14,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -58,6 +60,7 @@ public class VaultClient {
 	private String username;
 	private String password;
 	private String vaultClientId;
+	private Map<String, String> userProvidedHeaderParams = new LinkedHashMap<>();
 	private boolean logApiErrors = true;
 
 	private AuthenticationResponse authenticationResponse = null;
@@ -167,6 +170,23 @@ public class VaultClient {
 	 */
 	protected void setVaultClientId(String vaultClientId) {
 		this.vaultClientId = vaultClientId;
+	}
+
+	/**
+	 * @return additional HTTP header params
+	 */	public Map<String, String> getUserProvidedHeaderParams() {
+		return userProvidedHeaderParams;
+	}
+
+	/**
+	 * Set the additional HTTP header params for each call
+	 *
+	 * @param userProvidedHeaderParams Vault Client Id
+	 */
+	public void setUserProvidedHeaderParams(Map<String, String> userProvidedHeaderParams) {
+		if(userProvidedHeaderParams != null) {
+			this.userProvidedHeaderParams.putAll(userProvidedHeaderParams);
+		}
 	}
 
 	/**

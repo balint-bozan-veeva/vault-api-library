@@ -12,6 +12,8 @@ import com.veeva.vault.vapil.api.request.AuthenticationRequest;
 import com.veeva.vault.vapil.connector.HttpRequestConnector;
 import org.apache.log4j.Logger;
 
+import java.util.Map;
+
 public class VaultClientBuilder {
 
 	private static Logger log = Logger.getLogger(VaultClientBuilder.class);
@@ -26,10 +28,11 @@ public class VaultClientBuilder {
 	private String vaultDNS;
 	private String vaultPassword;
 	private String vaultUsername;
+	private Map<String, String> userProvidedHeaderParams;
 	private String vaultSessionId;
 	private String vaultOauthClientId;
 	private String vaultOauthProfileId;
-	private VaultClientId vaultClientId;
+	private String vaultClientId;
 	private boolean validateSession = true;
 
 	protected VaultClientBuilder () {}
@@ -63,7 +66,7 @@ public class VaultClientBuilder {
 			throw new IllegalArgumentException("Vault DNS is required");
 		}
 
-		if (vaultClientId == null || vaultClientId.getClientId().isEmpty()) {
+		if (vaultClientId == null || vaultClientId.isEmpty()) {
 			log.error("Vault Client Id is required");
 			throw new IllegalArgumentException("Vault Client Id is required");
 		}
@@ -78,6 +81,8 @@ public class VaultClientBuilder {
 		if (httpTimeout != null) {
 			HttpRequestConnector.setGlobalTimeout(httpTimeout);
 		}
+
+		vaultClient.setUserProvidedHeaderParams(userProvidedHeaderParams);
 
 		//create a generic auth request and response
 		AuthenticationRequest authRequest = vaultClient.newRequest(AuthenticationRequest.class);
@@ -178,6 +183,17 @@ public class VaultClientBuilder {
 	}
 
 	/**
+	 * Add user specific http header values
+	 *
+	 * @param extraHeaderParams user specific header values
+	 * @return {@link VaultClientBuilder}
+	 */
+	public VaultClientBuilder withCustomHttpHeaderFields(Map<String, String> extraHeaderParams) {
+		this.userProvidedHeaderParams = extraHeaderParams;
+		return this;
+	}
+
+	/**
 	 * Set the http timeout for the Vault Client. Default = 60 minutes.
 	 * <p>&nbsp;</p>
 	 * Can only be set before any and all HTTP calls are first executed including authentication
@@ -261,7 +277,7 @@ public class VaultClientBuilder {
 	 * @param vaultClientId Vault Client Id (ex. verteobiotech-vault-quality-server-myapp)
 	 * @return {@link VaultClientBuilder}
 	 */
-	public VaultClientBuilder withVaultClientId(VaultClientId vaultClientId) {
+	public VaultClientBuilder withVaultClientId(String vaultClientId) {
 		this.vaultClientId = vaultClientId;
 		return this;
 	}
