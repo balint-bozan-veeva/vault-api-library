@@ -357,4 +357,17 @@ public class VaultClientBuilder {
 		this.vaultUsername = vaultUsername;
 		return this;
 	}
+
+	/**
+	 * Initialize with a user's custom HTTP header param.
+	 * <p>&nbsp;</p>
+	 * It is optional, can be used for x-api-key for example
+	 *
+	 * @param userProvidedHeaderParams is a key valur map
+	 * @return {@link VaultClientBuilder}
+	 */
+	public VaultClientBuilder withUserProvidedHeaderParams(Map<String, String> userProvidedHeaderParams) {
+		this.userProvidedHeaderParams = userProvidedHeaderParams;
+		return this;
+	}
 }

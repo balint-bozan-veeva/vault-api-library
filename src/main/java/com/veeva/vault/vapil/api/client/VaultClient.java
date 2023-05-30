@@ -817,6 +817,20 @@ public class VaultClient {
 			this.settings.setVaultUsername(vaultUsername);
 			return this;
 		}
+
+
+		/**
+		 * Initialize with a user's custom HTTP header values.
+		 * <p>&nbsp;</p>
+		 * Optional
+		 *
+		 * @param userProvidedHeaderParams is for key - value pairs
+		 * @return {@link Builder}
+		 */
+		public Builder withUserProvidedHeaderParams(Map<String, String> userProvidedHeaderParams) {
+			this.settings.setUserProvidedHeaderParams(userProvidedHeaderParams);
+			return this;
+		}
 	}
 
 	public static class Settings extends VaultModel {
@@ -901,6 +915,15 @@ public class VaultClient {
 		public void setVaultClientId(String vaultClientId) {
 			this.set("vaultClientId", vaultClientId);
 		}
+
+		@JsonProperty("userProvidedHeaderParams")
+		public String getUserProvidedHeaderParams() {
+			return getString("userProvidedHeaderParams");
+		}
+		public void setUserProvidedHeaderParams(Map<String, String> userProvidedHeaderParams) {
+			this.set("userProvidedHeaderParams", userProvidedHeaderParams);
+		}
+
 
 		@JsonProperty("vaultDNS")
 		public String getVaultDNS() {
