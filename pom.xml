@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.veeva.vault</groupId>
-	<artifactId>vapil</artifactId>
+	<artifactId>vapil-fork-BB</artifactId>
 	<version>23.1.2</version>
 
 	<packaging>jar</packaging>
@@ -142,7 +142,7 @@
 
 
 	<build>
-		<finalName>vapil-${project.version}</finalName>
+		<finalName>vapil-fork-BB-${project.version}</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
