@@ -22,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.veeva.vault.iaas.apigeeintegration.ApigeeAuthUtil;
+import com.veeva.vault.iaas.apigeeintegration.ApigeeConfigVO;
 import com.veeva.vault.vapil.api.model.VaultModel;
 import com.veeva.vault.vapil.api.model.response.ApiVersionResponse;
 import com.veeva.vault.vapil.api.model.response.VaultResponse;
@@ -50,8 +52,12 @@ public class VaultClient {
 	 */
 	public static final String VAULT_API_VERSION = "v23.1";
 
+	public static final String APIGEE_PATH_PREFIX = "/eap-veeva-system-api/v1";
+
+	public static final String APIGEE_HOST_URL = "https://ch-api-dev.apigee.net";
+
 	private static final String VAULT_CLIENT_SETTER = "setVaultClient"; // The VaultRequest VaultClient setter
-	private static final String URL_LOGIN = "login.veevavault.com"; // The VaultRequest VaultClient setter
+	private static final String URL_LOGIN = "ch-api-dev.apigee.net"; // The VaultRequest VaultClient setter
 
 	/**
 	 * The Vault DNS in format myvault.veevavault.com
@@ -221,11 +227,7 @@ public class VaultClient {
 	 * includeVersion(false) - https://myvault.com/api/mdl/components
 	 */
 	public String getAPIEndpoint(String endpoint, boolean includeVersion) {
-		if (includeVersion) {
-			return getVaultUrl() + "/api/" + VAULT_API_VERSION + endpoint;
-		} else {
-			return getVaultUrl() + "/api/" + endpoint;
-		}
+			return APIGEE_HOST_URL + APIGEE_PATH_PREFIX + endpoint;
 	}
 
 	/**
@@ -247,14 +249,11 @@ public class VaultClient {
 	 * @return URL for the API endpoint in form https://myvault.com/api/{version}/objects/documents
 	 */
 	public String getPaginationEndpoint(String pageUrl) {
-		if (pageUrl.startsWith("https://" + vaultDNS))
+		if (pageUrl.startsWith(APIGEE_HOST_URL))
 			return pageUrl;
 
-		if (pageUrl.startsWith("/api/" + VAULT_API_VERSION))
-			return getAPIEndpoint(pageUrl.substring(VAULT_API_VERSION.length() + 5), true);
-
-		if (pageUrl.startsWith("/api/"))
-			return getAPIEndpoint(pageUrl.substring(5), false);
+		if (pageUrl.startsWith(APIGEE_PATH_PREFIX))
+			return getAPIEndpoint(pageUrl.substring(APIGEE_PATH_PREFIX.length()), true);
 
 		return getAPIEndpoint(pageUrl, true);
 	}
@@ -263,11 +262,8 @@ public class VaultClient {
 		if (href.startsWith("https://" + vaultDNS))
 			return href;
 
-		if (href.startsWith("/api/" + VAULT_API_VERSION))
-			return getAPIEndpoint(href.substring(VAULT_API_VERSION.length() + 5), true);
-
-		if (href.startsWith("/api/"))
-			return getAPIEndpoint(href.substring(5), false);
+		if (href.startsWith(APIGEE_PATH_PREFIX))
+			return getAPIEndpoint(href.substring(APIGEE_PATH_PREFIX.length()), true);
 
 		return getAPIEndpoint(href, true);
 	}
@@ -539,6 +535,11 @@ public class VaultClient {
 			vaultClient.setVaultClientId(settings.getVaultClientId());
 			vaultClient.setVaultDNS(settings.getVaultDNS());
 			vaultClient.setLogApiErrors(settings.getLogApiErrors());
+
+			// authenticate to Apigee
+			vaultClient.setUserProvidedHeaderParams(new ApigeeAuthUtil().getAuthHeaderProperties(settings.apigeeConfig));
+			// ignore the auth, already have session id in the header
+			settings.setAuthenticationType(AuthenticationType.NO_AUTH);
 
 			//if the user specified an http timeout, then set the global time out
 			if (settings.getHttpTimeout() != null) {
@@ -834,6 +835,9 @@ public class VaultClient {
 	}
 
 	public static class Settings extends VaultModel {
+
+		@JsonProperty("apigeeConfig")
+		public ApigeeConfigVO apigeeConfig;
 
 		//	JSON model for creating a Vault Client Builder from a settings file
 		@JsonProperty("authenticationType")
