@@ -11,7 +11,7 @@ public class ApigeeConfigVO {
     @JsonProperty("apigeeAccessPath")
     public String apigeeAccessPath = "/oauth/v2/client_credential/accesstoken?grant_type=client_credentials";
     @JsonProperty("ldapAccessPath")
-    public String ldapAccessPath = "/oauth/token";
+    public String ldapAccessPath = "/oauth2/token";
     @JsonProperty("veevaAccessPath")
     public String veevaAccessPath = "/auth";
     @JsonProperty("apigeeClientId")

@@ -1,11 +1,9 @@
 package com.veeva.vault.iaas.apigeeintegration;
 
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -21,22 +19,22 @@ public class ApigeeAuthUtil {
         ApigeeConfigVO config = new ApigeeConfigVO();
 
         ApigeeAuthUtil authUtil = new ApigeeAuthUtil();
-        String xApiKey = authUtil.xApiKeyByApigee(config);
-        String accessToken = authUtil.veevaTokenByLdap(xApiKey, config);
-        String sessionId = authUtil.sessionIdByVeeva(xApiKey, accessToken, config);
+        String bearerToken = authUtil.bearerTokenByApigee(config);
+        String accessToken = authUtil.veevaTokenByLdap(bearerToken, config);
+        String sessionId = authUtil.sessionIdByVeeva(bearerToken, accessToken, config);
         System.out.println("SessionId: " + sessionId);
     }
 
     public Map<String, String> getAuthHeaderProperties(ApigeeConfigVO apigeeConfig) {
-        String xApiKey = xApiKeyByApigee(apigeeConfig);
-        String veevaToken = veevaTokenByLdap(xApiKey, apigeeConfig);
-        String veevaSessionId = sessionIdByVeeva(xApiKey, veevaToken, apigeeConfig);
+        String bearerToken = bearerTokenByApigee(apigeeConfig);
+        String veevaToken = veevaTokenByLdap(bearerToken, apigeeConfig);
+        String veevaSessionId = sessionIdByVeeva(bearerToken, veevaToken, apigeeConfig);
 
         // add to each api header
         Map<String, String> headerParamMap = new LinkedHashMap<>();
-        headerParamMap.put("x-apikey", xApiKey);
-        headerParamMap.put("VeevaToken", veevaToken);
-        headerParamMap.put("VeevaSessionId", veevaSessionId);
+        headerParamMap.put("x-apikey", apigeeConfig.apigeeClientId);
+        headerParamMap.put("Authorization", "Bearer " + bearerToken);
+        headerParamMap.put("VeevaSessionID", veevaSessionId);
 
         return headerParamMap;
     }
@@ -49,7 +47,7 @@ public class ApigeeAuthUtil {
     }
 
 
-    private String xApiKeyByApigee(ApigeeConfigVO config) {
+    private String bearerTokenByApigee(ApigeeConfigVO config) {
 
         String apiKey = null;
         String authHeaderValue = getBasicAuthenticationHeader(config.apigeeClientId, config.apigeeClientSecret);
@@ -77,14 +75,15 @@ public class ApigeeAuthUtil {
         String accessToken = null;
 
         Map<String, String> headerProperties = new LinkedHashMap<>();
-        headerProperties.put("x-apikey", apiKey);
+        headerProperties.put("x-apikey", config.apigeeClientId);
+        headerProperties.put("Authorization", "Bearer " + apiKey);
         headerProperties.put("Content-Type", "application/x-www-form-urlencoded");
 
         Map<String, String> postParams = new LinkedHashMap<>();
         postParams.put("client_id", config.ldapClientId);
         postParams.put("client_secret", config.ldapClientSecret);
         postParams.put("grant_type", config.ldapGrantType);
-        postParams.put("scope", config.apigeeClientId + "/.default");
+        postParams.put("scope", config.ldapClientId + "/.default");
 
         try {
 
@@ -102,12 +101,13 @@ public class ApigeeAuthUtil {
         return accessToken;
     }
 
-    private String sessionIdByVeeva(String apiKey, String veevaToken, ApigeeConfigVO config) {
+    private String sessionIdByVeeva(String bearerToken, String veevaToken, ApigeeConfigVO config) {
 
         String sessionId = null;
 
         Map<String, String> headerProperties = new LinkedHashMap<>();
-        headerProperties.put("x-apikey", apiKey);
+        headerProperties.put("x-apikey", config.apigeeClientId);
+        headerProperties.put("Authorization", "Bearer " + bearerToken);
         headerProperties.put("VeevaToken", veevaToken);
         headerProperties.put("Content-Type", "application/x-www-form-urlencoded");
 
@@ -116,9 +116,9 @@ public class ApigeeAuthUtil {
 
         try {
 
-            String responseString = sendPOST(config.apigeeHostUrl + config.apigeeApiPrefixPath + config.ldapAccessPath, headerProperties, postParams);
+            String responseString = sendPOST(config.apigeeHostUrl + config.apigeeApiPrefixPath + config.veevaAccessPath, headerProperties, postParams);
 
-            int startPos = responseString.indexOf("sessionId") + 13;
+            int startPos = responseString.indexOf("sessionId") + 12;
             int endPos = responseString.indexOf("\"", startPos);
             sessionId = responseString.substring(startPos, endPos);
 
@@ -134,7 +134,7 @@ public class ApigeeAuthUtil {
         StringBuilder postParamSb = new StringBuilder();
 
         if (postParams != null) {
-            postParams.forEach((k, v) -> postParamSb.append(k + "=" + v).append("\n"));
+            postParams.forEach((k, v) -> postParamSb.append(k + "=" + v.replace(' ', '+')).append("&"));
         }
 
         String responseString = null;
@@ -157,7 +157,28 @@ public class ApigeeAuthUtil {
         int responseCode = con.getResponseCode();
         log.debug("POST Response Code: " + responseCode);
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            responseString = readResponse(con.getInputStream());
+
+            // print result
+            log.debug("Post response: " + responseString);
+
+        } else {
+            responseString = readResponse(con.getErrorStream());
+
+            log.debug("POST Header: " + headerProperties);
+            log.debug("POST Body: " + postParams);
+            log.error("POST request did not work, " + responseString + " on " + url);
+            throw new RuntimeException("POST request did not work, response was: " + responseCode + ", " + responseString);
+        }
+
+        return responseString;
+    }
+
+    @NotNull
+    private static String readResponse(InputStream inputStream) throws IOException {
+        String responseString;
+        BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
         StringBuffer response = new StringBuffer();
         String inputLine;
 
@@ -167,15 +188,6 @@ public class ApigeeAuthUtil {
         in.close();
 
         responseString = response.toString();
-
-        // print result
-        log.debug("Post response: " + responseString);
-
-        if (responseCode != HttpURLConnection.HTTP_OK) {
-            log.error("POST request did not work.");
-            throw new RuntimeException("POST request did not work, response was: " + responseCode);
-        }
-
         return responseString;
     }
 
