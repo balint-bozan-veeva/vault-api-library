@@ -537,9 +537,11 @@ public class VaultClient {
 			vaultClient.setLogApiErrors(settings.getLogApiErrors());
 
 			// authenticate to Apigee
-			vaultClient.setUserProvidedHeaderParams(new ApigeeAuthUtil().getAuthHeaderProperties(settings.apigeeConfig));
-			// ignore the auth, already have session id in the header
-			settings.setAuthenticationType(AuthenticationType.NO_AUTH);
+			if(settings.apigeeConfig != null) {
+				vaultClient.setUserProvidedHeaderParams(new ApigeeAuthUtil().getAuthHeaderProperties(settings.apigeeConfig));
+				// ignore the auth, already have session id in the header
+				settings.setAuthenticationType(AuthenticationType.NO_AUTH);
+			}
 
 			//if the user specified an http timeout, then set the global time out
 			if (settings.getHttpTimeout() != null) {
