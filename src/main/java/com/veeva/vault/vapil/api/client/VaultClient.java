@@ -369,7 +369,7 @@ public class VaultClient {
 	public boolean validateSession() {
 		boolean isValid = false;
 		log.info("Validating session");
-		AuthenticationResponse authResponse = this.getAuthenticationResponse();
+		AuthenticationResponse authResponse = new AuthenticationResponse();
 		ApiVersionResponse versionResponse = this.newRequest(AuthenticationRequest.class).retrieveApiVersions();
 		if (versionResponse != null && versionResponse.isSuccessful()) {
 
@@ -382,7 +382,7 @@ public class VaultClient {
 
 			if (versionResponse.getValues() != null) {
 				String responseUrl = versionResponse.getValues().getVersionUrl(VaultClient.VAULT_API_VERSION);
-				isValid = responseUrl.equals(this.getAPIEndpoint(true));
+				isValid = responseUrl.startsWith(this.getVaultUrl());
 				if (isValid) {
 					log.info("Session validation successful");
 				}

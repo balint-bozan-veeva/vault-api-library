@@ -28,7 +28,7 @@ public class AuthenticationRequest extends VaultRequest {
 	private static Logger log = Logger.getLogger(AuthenticationRequest.class);
 
 	// API Endpoints
-	private static final String URL_API = "";
+	private static final String URL_API = "/sessionval";
 	private static final String URL_AUTH = "/auth";
 	private static final String URL_KEEP_ALIVE = "/keep-alive";
 	private static final String URL_VALIDATE_SESSION_USER = "/objects/users/me";
