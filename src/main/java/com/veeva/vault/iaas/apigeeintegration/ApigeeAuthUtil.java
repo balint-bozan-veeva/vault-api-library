@@ -14,7 +14,12 @@ import java.util.Map;
 public class ApigeeAuthUtil {
     private static Logger log = Logger.getLogger(ApigeeAuthUtil.class);
 
-    // only for test
+    /**
+     * Main method to test the authentication.
+     *
+     * @param args not in used
+     */
+    //
     public static void main(String[] args) {
         ApigeeConfigVO config = new ApigeeConfigVO();
 
@@ -25,6 +30,12 @@ public class ApigeeAuthUtil {
         System.out.println("SessionId: " + sessionId);
     }
 
+    /**
+     * Public authentication request endpoint
+     *
+     * @param apigeeConfig section of the VAPIL json file
+     * @return a map with the auth token values
+     */
     public Map<String, String> getAuthHeaderProperties(ApigeeConfigVO apigeeConfig) {
         String bearerToken = bearerTokenByApigee(apigeeConfig);
         String veevaToken = veevaTokenByLdap(bearerToken, apigeeConfig);
@@ -39,6 +50,13 @@ public class ApigeeAuthUtil {
         return headerParamMap;
     }
 
+    /**
+     * Generates Basic Authentication header value
+     *
+     * @param username to be set
+     * @param password to be set
+     * @return Base64 encoded username and password
+     */
     private static final String getBasicAuthenticationHeader(String username, String password) {
         String auth = username + ":" + password;
         byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
@@ -46,7 +64,12 @@ public class ApigeeAuthUtil {
         return authHeaderValue;
     }
 
-
+    /**
+     * Authenticate against ApiGee
+     *
+     * @param config section of the VAPIL json file
+     * @return token value
+     */
     private String bearerTokenByApigee(ApigeeConfigVO config) {
 
         String apiKey = null;
@@ -70,6 +93,13 @@ public class ApigeeAuthUtil {
         return apiKey;
     }
 
+    /**
+     * Ldap authentication
+     *
+     * @param apiKey for the request header
+     * @param config section of the VAPIL json file
+     * @return token value
+     */
     private String veevaTokenByLdap(String apiKey, ApigeeConfigVO config) {
 
         String accessToken = null;
@@ -101,6 +131,14 @@ public class ApigeeAuthUtil {
         return accessToken;
     }
 
+    /**
+     * Gets the Veeva Vault session id
+     *
+     * @param bearerToken for the request header
+     * @param veevaToken  for the request header
+     * @param config      section of the VAPIL json file
+     * @return Vault session id
+     */
     private String sessionIdByVeeva(String bearerToken, String veevaToken, ApigeeConfigVO config) {
 
         String sessionId = null;
@@ -130,6 +168,15 @@ public class ApigeeAuthUtil {
         return sessionId;
     }
 
+    /**
+     * HTTP communication
+     *
+     * @param url              to the request
+     * @param headerProperties of the request
+     * @param postParams       of the request
+     * @return response string
+     * @throws IOException in case of error
+     */
     private String sendPOST(String url, Map<String, String> headerProperties, Map<String, String> postParams) throws IOException {
         StringBuilder postParamSb = new StringBuilder();
 
@@ -175,6 +222,13 @@ public class ApigeeAuthUtil {
         return responseString;
     }
 
+    /**
+     * Read InputStream to a String
+     *
+     * @param inputStream to be set
+     * @return the string was streamed
+     * @throws IOException in case of error
+     */
     @NotNull
     private static String readResponse(InputStream inputStream) throws IOException {
         String responseString;
@@ -190,5 +244,4 @@ public class ApigeeAuthUtil {
         responseString = response.toString();
         return responseString;
     }
-
 }
