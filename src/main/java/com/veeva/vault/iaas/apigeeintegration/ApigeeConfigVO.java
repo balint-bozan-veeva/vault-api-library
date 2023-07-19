@@ -2,6 +2,13 @@ package com.veeva.vault.iaas.apigeeintegration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * @author balint.bozan
+ * @version 1.0
+ * <p>
+ * Value object for ApiGee configuration values
+ * </p>
+ */
 public class ApigeeConfigVO {
 
     @JsonProperty("apigeeHostUrl")

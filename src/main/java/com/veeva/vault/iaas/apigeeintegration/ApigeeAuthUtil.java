@@ -11,8 +11,15 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * @author balint.bozan
+ * @version 1.0
+ * <p>
+ * Authenticates against ApiGee and Ldap. It gets the Vault sessionId as well and collects the tokens in a map.
+ * </p>
+ */
 public class ApigeeAuthUtil {
-    private static Logger log = Logger.getLogger(ApigeeAuthUtil.class);
+    private static final Logger log = Logger.getLogger(ApigeeAuthUtil.class);
 
     /**
      * Main method to test the authentication.
@@ -57,7 +64,7 @@ public class ApigeeAuthUtil {
      * @param password to be set
      * @return Base64 encoded username and password
      */
-    private static final String getBasicAuthenticationHeader(String username, String password) {
+    private static String getBasicAuthenticationHeader(String username, String password) {
         String auth = username + ":" + password;
         byte[] encodedAuth = Base64.getEncoder().encode(auth.getBytes(StandardCharsets.UTF_8));
         String authHeaderValue = "Basic " + new String(encodedAuth);
@@ -72,7 +79,7 @@ public class ApigeeAuthUtil {
      */
     private String bearerTokenByApigee(ApigeeConfigVO config) {
 
-        String apiKey = null;
+        String apiKey;
         String authHeaderValue = getBasicAuthenticationHeader(config.apigeeClientId, config.apigeeClientSecret);
 
         Map<String, String> headerProperties = new LinkedHashMap<>();
@@ -102,7 +109,7 @@ public class ApigeeAuthUtil {
      */
     private String veevaTokenByLdap(String apiKey, ApigeeConfigVO config) {
 
-        String accessToken = null;
+        String accessToken;
 
         Map<String, String> headerProperties = new LinkedHashMap<>();
         headerProperties.put("x-apikey", config.apigeeClientId);
@@ -141,7 +148,7 @@ public class ApigeeAuthUtil {
      */
     private String sessionIdByVeeva(String bearerToken, String veevaToken, ApigeeConfigVO config) {
 
-        String sessionId = null;
+        String sessionId;
 
         Map<String, String> headerProperties = new LinkedHashMap<>();
         headerProperties.put("x-apikey", config.apigeeClientId);
@@ -184,7 +191,7 @@ public class ApigeeAuthUtil {
             postParams.forEach((k, v) -> postParamSb.append(k + "=" + v.replace(' ', '+')).append("&"));
         }
 
-        String responseString = null;
+        String responseString;
 
         URL obj = new URL(url);
         HttpURLConnection con = (HttpURLConnection) obj.openConnection();
@@ -233,7 +240,7 @@ public class ApigeeAuthUtil {
     private static String readResponse(InputStream inputStream) throws IOException {
         String responseString;
         BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuffer response = new StringBuffer();
+        StringBuilder response = new StringBuilder();
         String inputLine;
 
         while ((inputLine = in.readLine()) != null) {
