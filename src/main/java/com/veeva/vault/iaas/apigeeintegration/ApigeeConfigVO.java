@@ -5,23 +5,23 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ApigeeConfigVO {
 
     @JsonProperty("apigeeHostUrl")
-    public String apigeeHostUrl = "https://ch-api-dev.apigee.net";
+    public String apigeeHostUrl;
     @JsonProperty("apigeeApiPrefixPath")
-    public String apigeeApiPrefixPath = "/eap-veeva-system-api/v1";
+    public String apigeeApiPrefixPath;
     @JsonProperty("apigeeAccessPath")
-    public String apigeeAccessPath = "/oauth/v2/client_credential/accesstoken?grant_type=client_credentials";
+    public String apigeeAccessPath;
     @JsonProperty("ldapAccessPath")
-    public String ldapAccessPath = "/oauth2/token";
+    public String ldapAccessPath;
     @JsonProperty("veevaAccessPath")
-    public String veevaAccessPath = "/auth";
+    public String veevaAccessPath;
     @JsonProperty("apigeeClientId")
-    public String apigeeClientId = "sGsp4Cc0d0YsMjKOGz6PpfbcoznIDGXT";
+    public String apigeeClientId;
     @JsonProperty("apigeeClientSecret")
-    public String apigeeClientSecret = "3xDsueTFNiEugFlx";
+    public String apigeeClientSecret;
     @JsonProperty("ldapClientId")
-    public String ldapClientId = "55f91c09-f406-40f5-b9d8-2a3414b5858a";
+    public String ldapClientId;
     @JsonProperty("ldapClientSecret")
-    public String ldapClientSecret = "ZMb8Q~J5dmCxbKXUbOMW47W-myJqxHXKUBpGddrp";
+    public String ldapClientSecret;
     @JsonProperty("ldapGrantType")
-    public String ldapGrantType = "client_credentials";
+    public String ldapGrantType;
 }
